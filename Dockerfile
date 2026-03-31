@@ -6,69 +6,49 @@ RUN npm ci --silent
 COPY frontend/ .
 RUN npm run build
 
-# ── Stage 2: Python backend + serve built React ───────────────
+# ── Stage 2: Python backend ───────────────────────────────────
 FROM python:3.12-slim
 
-# Non-root user (required by HuggingFace Spaces)
 RUN useradd -m -u 1000 appuser
 
 WORKDIR /app
 
-# System dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
-# Python dependencies
-COPY requirements.txt .
+# Install Python dependencies
 RUN pip install --no-cache-dir \
-    fastapi>=0.110.0 \
-    uvicorn[standard]>=0.29.0 \
-    sse-starlette>=1.6.0 \
-    python-multipart>=0.0.9 \
-    anthropic>=0.40.0 \
-    apscheduler>=3.10.0 \
-    psycopg2-binary>=2.9.0 \
-    requests>=2.31.0 \
-    beautifulsoup4>=4.12.0 \
-    pandas>=2.0.0 \
-    -r requirements.txt 2>/dev/null || true
+    fastapi==0.110.0 \
+    "uvicorn[standard]==0.29.0" \
+    sse-starlette==1.8.2 \
+    python-multipart==0.0.9 \
+    anthropic==0.40.0 \
+    apscheduler==3.10.4 \
+    psycopg2-binary==2.9.9 \
+    requests==2.31.0 \
+    beautifulsoup4==4.12.3 \
+    pandas==2.2.1 \
+    numpy==1.26.4 \
+    python-dotenv==1.0.1 \
+    aiofiles==23.2.1
 
 # Copy backend source
 COPY backend/ ./backend/
 
-# Copy built React frontend into backend/static
+# Copy built React into backend/static
 COPY --from=frontend /build/dist ./backend/static/
 
-# Patch main.py to serve static files
-RUN python -c "
-import re
-path = 'backend/main.py'
-code = open(path).read()
-# Add static file serving if not already present
-patch = '''
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os as _os
-_static = _os.path.join(_os.path.dirname(__file__), 'static')
-if _os.path.isdir(_static):
-    app.mount('/assets', StaticFiles(directory=_os.path.join(_static,'assets')), name='assets')
-    @app.get('/{full_path:path}', include_in_schema=False)
-    async def spa(full_path: str):
-        return FileResponse(_os.path.join(_static, 'index.html'))
-'''
-if 'StaticFiles' not in code:
-    open(path, 'a').write(patch)
-print('Static serving patched')
-"
+# Data directory
+RUN mkdir -p /app/data && chown appuser:appuser /app/data /app/backend
 
-# Data directory (override with Docker volume or env var)
-RUN mkdir -p /app/data && chown appuser /app/data
 ENV DB_PATH=/app/data/ppc_intel.db
 
-# HuggingFace Spaces uses port 7860
 EXPOSE 7860
 
 USER appuser
 
 WORKDIR /app/backend
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
+  CMD curl -f http://localhost:7860/api/health || exit 1
+
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]

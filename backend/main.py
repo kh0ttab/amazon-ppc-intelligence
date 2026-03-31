@@ -8,7 +8,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, UploadFile, File, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
+from fastapi.staticfiles import StaticFiles
 from sse_starlette.sse import EventSourceResponse
 
 import database
@@ -738,3 +739,13 @@ def reset_data():
     db.commit()
     db.close()
     return {"status": "cleared"}
+
+
+# ── Serve React frontend (production) ────────────────────────
+_static_dir = Path(__file__).parent / "static"
+if _static_dir.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(_static_dir / "assets")), name="assets")
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        return FileResponse(str(_static_dir / "index.html"))
