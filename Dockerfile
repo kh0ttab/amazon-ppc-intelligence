@@ -13,7 +13,7 @@ RUN useradd -m -u 1000 appuser
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 RUN pip install --no-cache-dir \
@@ -47,8 +47,5 @@ EXPOSE 7860
 USER appuser
 
 WORKDIR /app/backend
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=15s \
-  CMD curl -f http://localhost:7860/api/health || exit 1
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
