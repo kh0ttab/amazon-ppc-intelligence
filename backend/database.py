@@ -201,7 +201,21 @@ def get_db():
             import psycopg2
         except ImportError:
             raise RuntimeError("psycopg2-binary not installed. Run: pip install psycopg2-binary")
-        conn = psycopg2.connect(DATABASE_URL)
+
+        # Force IPv4 — HuggingFace Spaces free tier has no IPv6 outbound
+        import socket
+        _orig_getaddrinfo = socket.getaddrinfo
+        def _ipv4_only(host, port, family=0, *args, **kwargs):
+            return _orig_getaddrinfo(host, port, socket.AF_INET, *args, **kwargs)
+        socket.getaddrinfo = _ipv4_only
+
+        url = DATABASE_URL
+        if "?" not in url:
+            url += "?sslmode=require&connect_timeout=15"
+        try:
+            conn = psycopg2.connect(url)
+        finally:
+            socket.getaddrinfo = _orig_getaddrinfo  # restore
         conn.autocommit = False
         return PGConnection(conn)
     else:
