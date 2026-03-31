@@ -114,6 +114,13 @@ def shutdown():
 
 @app.get("/api/health")
 def health():
+    """Lightweight liveness probe — always responds quickly for Docker healthcheck."""
+    return {"status": "ok"}
+
+
+@app.get("/api/status")
+def status():
+    """Full status check including DB and Claude connectivity (may be slow)."""
     cfg = load_config()
     api_key = cfg.get("claude_api_key", "") or os.environ.get("ANTHROPIC_API_KEY", "")
     claude_status = check_claude(api_key)
@@ -130,7 +137,6 @@ def health():
     except Exception as e:
         db_error = str(e)
 
-    # Fallback: check Ollama too
     ollama = {"online": False, "models": []}
     if OLLAMA_AVAILABLE:
         ollama = check_ollama(cfg.get("ollama_endpoint", "http://localhost:11434"))
