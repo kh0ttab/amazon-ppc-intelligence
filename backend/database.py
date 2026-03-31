@@ -202,20 +202,36 @@ def get_db():
         except ImportError:
             raise RuntimeError("psycopg2-binary not installed. Run: pip install psycopg2-binary")
 
-        # Force IPv4 — HuggingFace Spaces free tier has no IPv6 outbound
+        # psycopg2 is a C extension that calls libc getaddrinfo directly —
+        # Python socket monkey-patches don't affect it.
+        # Instead, resolve the hostname to IPv4 ourselves via Python, then
+        # pass the IP address directly so psycopg2 never does DNS resolution.
         import socket
-        _orig_getaddrinfo = socket.getaddrinfo
-        def _ipv4_only(host, port, family=0, *args, **kwargs):
-            return _orig_getaddrinfo(host, port, socket.AF_INET, *args, **kwargs)
-        socket.getaddrinfo = _ipv4_only
+        from urllib.parse import urlparse
 
-        url = DATABASE_URL
-        if "?" not in url:
-            url += "?sslmode=require&connect_timeout=15"
+        parsed = urlparse(DATABASE_URL)
+        hostname = parsed.hostname
+        port = parsed.port or 5432
+        user = parsed.username
+        password = parsed.password
+        dbname = (parsed.path or "/postgres").lstrip("/") or "postgres"
+
+        # Resolve to IPv4 using Python (which respects our AF_INET request)
         try:
-            conn = psycopg2.connect(url)
-        finally:
-            socket.getaddrinfo = _orig_getaddrinfo  # restore
+            addrs = socket.getaddrinfo(hostname, port, socket.AF_INET, socket.SOCK_STREAM)
+            ipv4_host = addrs[0][4][0]
+        except Exception:
+            ipv4_host = hostname  # fallback to original if resolution fails
+
+        conn = psycopg2.connect(
+            host=ipv4_host,
+            port=port,
+            user=user,
+            password=password,
+            dbname=dbname,
+            sslmode="require",
+            connect_timeout=15,
+        )
         conn.autocommit = False
         return PGConnection(conn)
     else:
