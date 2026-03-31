@@ -80,15 +80,16 @@ def startup():
     import logging
     log = logging.getLogger("main")
 
-    # Initialise database (moved here from database.py module level so the app
-    # starts even when the DB is temporarily unreachable)
-    try:
-        database.init_db()
-        log.info("Database initialised")
-    except Exception as e:
-        log.error(f"Database init failed: {e}")
-        # Don't crash — the app will still serve static files; DB-backed
-        # endpoints will return 503 individually.
+    # Initialise database in a background thread so uvicorn starts accepting
+    # requests immediately (Docker health check can pass while DB connects).
+    import threading
+    def _init_db():
+        try:
+            database.init_db()
+            log.info("Database initialised")
+        except Exception as e:
+            log.error(f"Database init failed — update DATABASE_URL to Supabase pooler URL: {e}")
+    threading.Thread(target=_init_db, daemon=True).start()
 
     try:
         from scheduler import start_scheduler

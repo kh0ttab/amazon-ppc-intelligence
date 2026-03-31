@@ -195,13 +195,13 @@ class SQLiteConnection:
 # ── Public API ────────────────────────────────────────────────
 
 _POOLER_REGIONS = [
-    "us-east-1", "us-west-1", "us-west-2",
-    "eu-central-1", "eu-west-1",
-    "ap-southeast-1", "ap-northeast-1", "ap-south-1",
-    "sa-east-1", "ca-central-1",
+    "us-east-1", "us-east-2", "us-west-1", "us-west-2",
+    "eu-central-1", "eu-west-1", "eu-west-2", "eu-north-1",
+    "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
+    "ap-south-1", "sa-east-1", "ca-central-1",
 ]
 
-# Cache the working pooler so we don't re-detect on every request
+# Cache the working pooler params; None means "probing failed — fail fast"
 _pooler_cache: dict = {}
 
 
@@ -217,7 +217,7 @@ def _find_supabase_pooler(project_ref: str, password: str, dbname: str) -> dict:
             password=password,
             dbname=dbname,
             sslmode="require",
-            connect_timeout=5,
+            connect_timeout=3,  # short timeout per region; total worst-case ~45s once
         )
         try:
             test = psycopg2.connect(**params)
@@ -227,7 +227,8 @@ def _find_supabase_pooler(project_ref: str, password: str, dbname: str) -> dict:
             continue
     raise RuntimeError(
         "Could not connect to any Supabase pooler region. "
-        "Check DATABASE_URL, password, and that the Supabase project is active."
+        "Please update DATABASE_URL in HuggingFace Spaces to use the session-pooler URL "
+        "from your Supabase dashboard (Settings → Database → Connection pooling)."
     )
 
 
@@ -255,8 +256,18 @@ def get_db():
         m = re.match(r"^db\.([a-z0-9]+)\.supabase\.co$", hostname)
         if m:
             project_ref = m.group(1)
-            if project_ref not in _pooler_cache:
-                _pooler_cache[project_ref] = _find_supabase_pooler(project_ref, password, dbname)
+            cached = _pooler_cache.get(project_ref, "UNSET")
+            if cached == "FAILED":
+                raise RuntimeError(
+                    "Supabase pooler probe already failed. "
+                    "Update DATABASE_URL to the session-pooler URL from Supabase dashboard."
+                )
+            if cached == "UNSET":
+                try:
+                    _pooler_cache[project_ref] = _find_supabase_pooler(project_ref, password, dbname)
+                except RuntimeError:
+                    _pooler_cache[project_ref] = "FAILED"
+                    raise
             conn_params = dict(_pooler_cache[project_ref])
         else:
             # Non-Supabase or already-pooler URL — connect as-is
