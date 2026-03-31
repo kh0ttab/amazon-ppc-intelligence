@@ -77,12 +77,24 @@ _scheduler = None
 @app.on_event("startup")
 def startup():
     global _scheduler
+    import logging
+    log = logging.getLogger("main")
+
+    # Initialise database (moved here from database.py module level so the app
+    # starts even when the DB is temporarily unreachable)
+    try:
+        database.init_db()
+        log.info("Database initialised")
+    except Exception as e:
+        log.error(f"Database init failed: {e}")
+        # Don't crash — the app will still serve static files; DB-backed
+        # endpoints will return 503 individually.
+
     try:
         from scheduler import start_scheduler
         _scheduler = start_scheduler()
     except Exception as e:
-        import logging
-        logging.getLogger("main").warning(f"Scheduler not started: {e}")
+        log.warning(f"Scheduler not started: {e}")
 
     # Backfill sales_snapshots from existing business_data on first run
     try:
@@ -105,11 +117,17 @@ def health():
     api_key = cfg.get("claude_api_key", "") or os.environ.get("ANTHROPIC_API_KEY", "")
     claude_status = check_claude(api_key)
 
-    db = database.get_db()
-    kw_count = db.execute("SELECT COUNT(*) as c FROM keyword_data").fetchone()["c"]
-    upload_count = db.execute("SELECT COUNT(*) as c FROM uploads").fetchone()["c"]
-    snapshot_count = db.execute("SELECT COUNT(DISTINCT snapshot_date) as c FROM sales_snapshots").fetchone()["c"]
-    db.close()
+    # DB stats — gracefully degrade if DB is unreachable
+    kw_count = upload_count = snapshot_count = 0
+    db_error = None
+    try:
+        db = database.get_db()
+        kw_count = db.execute("SELECT COUNT(*) as c FROM keyword_data").fetchone()["c"]
+        upload_count = db.execute("SELECT COUNT(*) as c FROM uploads").fetchone()["c"]
+        snapshot_count = db.execute("SELECT COUNT(DISTINCT snapshot_date) as c FROM sales_snapshots").fetchone()["c"]
+        db.close()
+    except Exception as e:
+        db_error = str(e)
 
     # Fallback: check Ollama too
     ollama = {"online": False, "models": []}
@@ -120,7 +138,8 @@ def health():
     sp_configured = bool(cfg.get("sp_api", {}).get("client_id"))
 
     return {
-        "status": "ok",
+        "status": "ok" if not db_error else "degraded",
+        "db_error": db_error,
         "claude_online": claude_status["online"],
         "claude_model": claude_status.get("model"),
         "claude_error": claude_status.get("error"),

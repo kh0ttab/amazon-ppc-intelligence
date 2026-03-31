@@ -481,4 +481,5 @@ def _create_tables(conn):
                 raise
 
 
-init_db()
+# init_db() is called from main.py startup event, NOT at import time.
+# Calling it here would block module import and crash the app if DB is unreachable.
