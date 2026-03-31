@@ -1,0 +1,14 @@
+{
+  "target_acos": 30.0,
+  "currency": "$",
+  "marketplace": "US",
+  "ollama_endpoint": "http://localhost:11434",
+  "ollama_model": "qwen2.5:14b",
+  "bleeding_acos_threshold": 100.0,
+  "waste_acos_threshold": 150.0,
+  "sleeping_days": 14,
+  "new_keyword_days": 7,
+  "bid_multiplier": 1.2,
+  "max_scrape_results": 10,
+  "log_file": "D:\\AmzOffProtocol\\amazonppc\\logs\\analysis.log"
+}

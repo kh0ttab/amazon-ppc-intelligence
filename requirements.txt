@@ -1,0 +1,20 @@
+rich>=13.0.0
+textual>=0.80.0
+textual-serve>=1.1.0
+pandas>=2.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+click>=8.1.0
+python-dotenv>=1.0.0
+tabulate>=0.9.0
+matplotlib>=3.7.0
+nltk>=3.8.0
+# Backend
+fastapi>=0.110.0
+uvicorn>=0.29.0
+sse-starlette>=1.6.0
+python-multipart>=0.0.9
+# AI
+anthropic>=0.40.0
+# Scheduling (automated daily/weekly sync)
+apscheduler>=3.10.0

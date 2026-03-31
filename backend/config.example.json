@@ -1,0 +1,21 @@
+{
+  "target_acos": 25.0,
+  "break_even_acos": 35.0,
+  "currency": "$",
+  "marketplace": "US",
+  "claude_api_key": "",
+  "claude_model": "claude-sonnet-4-6",
+  "harvest_clicks_threshold": 8,
+  "harvest_orders_threshold": 1,
+  "negative_clicks_threshold": 5,
+  "negative_spend_threshold": 3.0,
+  "bid_multiplier": 1.2,
+  "cogs_per_unit": 0,
+  "fba_fee": 0,
+  "referral_fee_pct": 15.0,
+  "competitor_asins": [],
+  "amazon_ads_api": {"client_id": "", "client_secret": "", "refresh_token": "", "profile_id": ""},
+  "sp_api": {"client_id": "", "client_secret": "", "refresh_token": "", "seller_id": ""},
+  "facebook_ads": {"app_id": "", "app_secret": "", "access_token": "", "ad_account_id": ""},
+  "shopify": {"shop_domain": "", "access_token": ""}
+}

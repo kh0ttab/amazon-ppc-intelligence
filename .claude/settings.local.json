@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \":*)",
+      "Bash(pip install:*)",
+      "Bash(python -m ui)",
+      "Read(//c//**)",
+      "Bash(pip show:*)",
+      "Bash(python:*)",
+      "Bash(textual serve:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vite:*)",
+      "Bash(curl -s http://localhost:11434/api/tags)",
+      "Bash(curl -s -X POST http://localhost:8000/api/upload -F \"file=@/tmp/test_report.csv;filename=SearchTermReport_March2026.csv\")",
+      "Bash(curl -s http://localhost:8000/api/dashboard)",
+      "Bash(netstat -ano)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(find /d/AmzOffProtocol/amazonppc/ui -type f -name *.py)",
+      "Bash(sqlite3 /d/AmzOffProtocol/amazonppc/backend/ppc_intel.db .schema)",
+      "WebSearch",
+      "WebFetch(domain:kb.triplewhale.com)",
+      "WebFetch(domain:triplewhale.readme.io)",
+      "WebFetch(domain:www.triplewhale.com)",
+      "WebFetch(domain:render.com)",
+      "WebFetch(domain:www.pythonanywhere.com)",
+      "WebFetch(domain:fly.io)",
+      "WebFetch(domain:railway.app)",
+      "WebFetch(domain:railway.com)",
+      "WebFetch(domain:hostadvice.com)",
+      "WebFetch(domain:www.pella.app)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
