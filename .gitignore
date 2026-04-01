@@ -2,6 +2,7 @@
 .env
 *.env
 backend/config.json
+.streamlit/secrets.toml
 
 # Database files — stay local
 *.db
