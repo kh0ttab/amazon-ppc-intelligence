@@ -57,17 +57,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Ollama warning */}
-      {health && !health.ollama_online && (
-        <div className="flex items-center gap-3 px-5 py-3 rounded-xl animate-in"
-             style={{ background: 'rgba(255,181,71,0.08)', border: '1px solid rgba(255,181,71,0.2)' }}>
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" style={{ color: 'var(--accent-warning)' }} />
-          <span className="text-sm" style={{ color: 'var(--accent-warning)' }}>
-            Ollama не запущен — AI функции недоступны. Запустите: <code className="font-mono bg-white/5 px-1.5 py-0.5 rounded">ollama serve</code>
-          </span>
-        </div>
-      )}
-
       {/* Upload guide toggle */}
       <div className="flex items-center justify-between">
         <button
@@ -76,7 +65,7 @@ export default function Dashboard() {
                      border border-accent-primary/20 text-accent-primary/70 hover:bg-accent-primary/5"
         >
           <Upload className="w-4 h-4" />
-          Какие отчёты загружать?
+          Which reports to upload?
           <ChevronDown className={`w-3 h-3 transition-transform ${showGuide ? 'rotate-180' : ''}`} />
         </button>
 
@@ -116,7 +105,7 @@ export default function Dashboard() {
             Amazon Seller Central Reports
           </h3>
           {REPORT_GUIDE.map((r, i) => (
-            <div key={i} className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+            <div key={i} className="inner-panel p-4">
               <div className="font-display text-sm font-semibold mb-1" style={{ color: 'var(--accent-primary)' }}>{r.name}</div>
               <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>
                 <span style={{ color: 'var(--text-muted)' }}>Путь:</span> {r.where}
@@ -130,8 +119,8 @@ export default function Dashboard() {
             </div>
           ))}
           <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Загрузите Business Report для расчёта органических продаж и TACoS.
-            Без него — видны только PPC данные.
+            Upload a Business Report to calculate organic sales and TACoS.
+            Without it — only PPC data is visible.
           </div>
         </div>
       )}
@@ -162,7 +151,7 @@ export default function Dashboard() {
               <span style={{ color: 'var(--accent-success)' }}>Organic: ${kpis.organic_sales?.toFixed(0)} ({kpis.organic_pct}%)</span>
             </div>
           </div>
-          <div className="flex gap-0.5 h-4 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          <div className="flex gap-0.5 h-4 rounded-full overflow-hidden" style={{ background: 'var(--progress-track)' }}>
             <div className="rounded-l-full transition-all duration-1000" style={{
               width: `${kpis.ppc_pct || 0}%`, background: 'var(--accent-primary)',
             }} />
@@ -192,7 +181,7 @@ export default function Dashboard() {
               return (
                 <div key={name} className="flex items-center gap-3">
                   <StatusBadge status={name} />
-                  <div className="flex-1 h-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div className="flex-1 h-1.5 rounded-full" style={{ background: 'var(--progress-track)' }}>
                     <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, background: colors[name] }} />
                   </div>
                   <span className="font-mono text-xs w-8 text-right" style={{ color: 'var(--text-data)' }}>{count}</span>
@@ -207,7 +196,7 @@ export default function Dashboard() {
           <h3 className="font-display text-sm font-semibold mb-4" style={{ color: 'var(--accent-success)' }}>Top Winners</h3>
           <div className="space-y-2">
             {winners.map((kw, i) => (
-              <div key={i} className="flex items-center justify-between py-1.5 transition-colors hover:bg-white/[0.03] rounded px-2 -mx-2">
+              <div key={i} className="flex items-center justify-between py-1.5 transition-colors table-row-hover rounded px-2 -mx-2">
                 <span className="text-sm truncate max-w-[180px] font-body">{kw.search_term}</span>
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-xs" style={{ color: 'var(--accent-success)' }}>${kw.sales?.toFixed(0)}</span>
@@ -224,7 +213,7 @@ export default function Dashboard() {
           <h3 className="font-display text-sm font-semibold mb-4" style={{ color: 'var(--accent-danger)' }}>Top Bleeders</h3>
           <div className="space-y-2">
             {bleeders.map((kw, i) => (
-              <div key={i} className="flex items-center justify-between py-1.5 transition-colors hover:bg-white/[0.03] rounded px-2 -mx-2">
+              <div key={i} className="flex items-center justify-between py-1.5 transition-colors table-row-hover rounded px-2 -mx-2">
                 <span className="text-sm truncate max-w-[180px] font-body">{kw.search_term}</span>
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-xs" style={{ color: 'var(--accent-danger)' }}>-${kw.spend?.toFixed(0)}</span>

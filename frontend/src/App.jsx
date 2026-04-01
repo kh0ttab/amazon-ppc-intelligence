@@ -130,7 +130,7 @@ export default function App() {
       >
         {/* Top bar */}
         <header className="sticky top-0 z-30 px-8 py-4 border-b"
-                style={{ background: 'rgba(8,11,20,0.8)', borderColor: 'var(--glass-border)', backdropFilter: 'blur(16px)' }}>
+                style={{ background: 'rgba(228,236,247,0.82)', borderColor: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}>
           <h1 className="font-display font-bold text-lg tracking-wide">
             {NAV_ITEMS.find(n => n.id === active)?.label || 'Dashboard'}
           </h1>

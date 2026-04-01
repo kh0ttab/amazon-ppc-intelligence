@@ -5,21 +5,22 @@ export default {
     extend: {
       fontFamily: {
         display: ['Syne', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
-        body: ['Outfit', 'sans-serif'],
+        mono:    ['DM Mono', 'monospace'],
+        body:    ['Outfit', 'sans-serif'],
       },
       colors: {
-        void: '#04050a',
-        base: '#080b14',
-        surface: '#0d1117',
         accent: {
-          primary: '#4f8eff',
-          glow: 'rgba(79,142,255,0.15)',
-          secondary: '#00d4aa',
-          danger: '#ff4d6a',
-          warning: '#ffb547',
-          success: '#00e096',
+          primary:   '#007AFF',
+          glow:      'rgba(0,122,255,0.14)',
+          secondary: '#5856D6',
+          danger:    '#FF3B30',
+          warning:   '#FF9500',
+          success:   '#34C759',
         },
+      },
+      borderRadius: {
+        '2xl': '1.25rem',
+        '3xl': '1.5rem',
       },
     },
   },

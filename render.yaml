@@ -1,18 +1,19 @@
-# Render.com deployment config
-# Deploy at: https://dashboard.render.com → New Web Service → Connect repo
+# Render.com deployment — FastAPI backend only
+# Frontend goes to Vercel. DB goes to Supabase.
+# Deploy: dashboard.render.com → New Web Service → connect repo
 
 services:
   - type: web
-    name: ppc-intel
+    name: offprotocol-ppc
     runtime: python
-    buildCommand: |
-      cd frontend && npm install && npm run build
-      pip install -r requirements.txt fastapi uvicorn[standard] sse-starlette python-multipart anthropic apscheduler
+    region: oregon
+    plan: free
+    buildCommand: pip install fastapi "uvicorn[standard]" sse-starlette python-multipart anthropic apscheduler psycopg2-binary requests beautifulsoup4 pandas numpy python-dotenv aiofiles openpyxl nltk
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
+      - key: DATABASE_URL
+        sync: false          # paste postgresql://postgres:...@....supabase.co:5432/postgres in Render dashboard
       - key: ANTHROPIC_API_KEY
-        sync: false   # set manually in dashboard
-    disk:
-      name: ppc-data
-      mountPath: /opt/render/project/src/backend
-      sizeGB: 1   # free tier: requires paid plan for persistent disk
+        sync: false          # paste sk-ant-... in Render dashboard
+      - key: PYTHON_VERSION
+        value: 3.12.0
